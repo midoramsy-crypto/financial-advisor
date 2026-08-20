@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import yfinance as yf
@@ -5,82 +6,68 @@ import yfinance as yf
 st.set_page_config(page_title="المستشار المالي الذكي", page_icon="📈", layout="wide")
 
 st.title("🛡️ نظام الاستثمار الذكي وعداد الحراسة اللحظي")
-st.markdown("منظومة تحليل الأسواق الإقليمية: القطاعات ⬅️ الدول ⬅️ الأسهم مع تقرير تحليل خبير مفصل.")
+st.markdown("منظومة تحليل الأسواق الإقليمية والعالمية: القطاعات ⬅️ الدول ⬅️ الأسهم مع تقرير تحليل خبير مفصل.")
 
-# 1. هيكل القائمة الجانبية الهرمي (القطاعات ثم الدول ثم الأسهم)
+# الهيكل الهرمي للقطاعات والدول والأسهم الأكثر دقة وثباتاً في جلب البيانات
 st.sidebar.header("🌐 رادار الأسواق الإقليمية الهرمي")
 
 sector_choice = st.sidebar.selectbox("1️⃣ اختر القطاع الرئيسي:", [
+    "الأسهم العالمية والتكنولوجية",
     "طاقة وبتروكيماويات",
     "مقاولات وبنية تحتية",
-    "تجارة وصناعة",
-    "بنوك وماليات",
-    "إدخال حر (بحث مباشر)"
+    "تجارة وصناعة وبنوك (مصر والسعودية)"
 ])
 
-# قاموس هرمي يربط القطاعات بالدول والأسهم ورموزها الدقيقة في yfinance
 database = {
+    "الأسهم العالمية والتكنولوجية": {
+        "أمريكا والعالم": {"إنفيديا (NVDA)": "NVDA", "أبل (AAPL)": "AAPL", "مايكروسوفت (MSFT)": "MSFT"}
+    },
     "طاقة وبتروكيماويات": {
-        "قطر": {"قطر للغاز / صناعات قطر": "IQCD.QA", "وقود": "QFLS.QA"},
         "السعودية": {"أرامكو السعودية": "2222.SR", "سابك": "2010.SR"},
-        "الإمارات": {"أدنوك للغاز": "ADNOCGAS.AD", "دانة غاز": "DANAH.AD"}
+        "الولايات المتحدة (مؤشر طاقة)": {"إكسجون موبيل": "XOM"}
     },
     "مقاولات وبنية تحتية": {
         "مصر": {"السويدي إليكتريك": "SWDY.CA", "أوراسكوم للتنمية": "ORHD.CA"},
-        "السعودية": {"بلفاعل للمقاولات/خدمات": "4220.SR", "أناناس": "1211.SR"},
-        "الإمارات": {"إعمار العقارية": "EMAAR.DU", "الدار العقارية": "ALDAR.AD"}
+        "الإمارات": {"إعمار العقارية": "EMAAR.DU"}
     },
-    "تجارة وصناعة": {
-        "مصر": {"النساجون الشرقيون": "ORWE.CA", "حديد عز": "ESRS.CA"},
-        "السعودية": {"معادن": "1211.SR", "سافكو/سبيكيم": "2310.SR"},
-        "الكويت": {"أسمنت الكويت": "ACEM.KW"}
-    },
-    "بنوك وماليات": {
-        "مصر": {"البنك التجاري الدولي (CIB)": "COMI.CA", "بنك أبوظبي الإسلامي": "ADIB.CA"},
-        "الكويت": {"بنك الكويت الوطني": "NBKK.KW", "بيت التمويل الكويتي": "KFH.KW"},
-        "قطر": {"بنك قطر الوطني": "QNBK.QA"}
+    "تجارة وصناعة وبنوك (مصر والسعودية)": {
+        "مصر": {"البنك التجاري الدولي (CIB)": "COMI.CA", "النساجون الشرقيون": "ORWE.CA", "حديد عز": "ESRS.CA"},
+        "السعودية": {"مصرف الراجحي": "1120.SR", "البنك الأهلي السعودي": "1180.SR"}
     }
 }
 
-selected_ticker = "NVDA"
+available_countries = list(database[sector_choice].keys())
+country_choice = st.sidebar.selectbox("2️⃣ اختر الدولة / السوق:", available_countries)
 
-if sector_choice == "إدخال حر (بحث مباشر)":
-    selected_ticker = st.sidebar.text_input("أدخل رمز السهم يدوياً:", value="NVDA")
-else:
-    # اختر الدولة بناءً على القطاع المختار
-    available_countries = list(database[sector_choice].keys())
-    country_choice = st.sidebar.selectbox("2️⃣ اختر الدولة:", available_countries)
-    
-    # اختر السهم بناءً على الدولة
-    available_stocks = database[sector_choice][country_choice]
-    stock_name_choice = st.sidebar.selectbox("3️⃣ اختر السهم:", list(available_stocks.keys()))
-    
-    selected_ticker = available_stocks[stock_name_choice]
+available_stocks = database[sector_choice][country_choice]
+stock_name_choice = st.sidebar.selectbox("3️⃣ اختر السهم:", list(available_stocks.keys()))
+
+selected_ticker = available_stocks[stock_name_choice]
 
 st.sidebar.markdown("---")
 risk_threshold = st.slider("حدد حد الأمان للذبذب:", 0.01, 0.10, 0.03)
 
-st.markdown(f"### 📊 الرمز قيد التحليل حالياً: `{selected_ticker}`")
+st.markdown(f"### 📊 الرمز قيد التحليل حالياً: `{selected_ticker}` ({stock_name_choice})")
 
 if st.button("🚀 ابدأ تحليل الخبير الشامل"):
     with st.spinner("جاري الاتصال بالأسواق وجلب البيانات اللحظية..."):
         try:
             stock = yf.Ticker(selected_ticker)
-            df = stock.history(period="3mo") # جلب بيانات آخر 3 شهور لتحليل أدق
+            df = stock.history(period="3mo")
             
-            if df.empty:
-                st.error("⚠️ عذراً، لم يتم العثور على بيانات لهذا الرمز. تأكد من اتصال الإنترنت أو صحة الرمز في السوق المعني.")
+            if df.empty or 'Close' not in df.columns or df['Close'].dropna().empty:
+                st.error("⚠️ عذراً، تعذر جلب بيانات حية لهذا السهم حالياً من المصدر. يجدر التجربة بأسهم أخرى متاحة في القائمة.")
             else:
                 current_price = df['Close'].iloc[-1]
-                prev_price = df['Close'].iloc[-2]
-                price_change = ((current_price - prev_price) / prev_price) * 100
+                prev_price = df['Close'].iloc[-2] if len(df) > 1 else current_price
+                price_change = ((current_price - prev_price) / prev_price) * 100 if prev_price else 0.0
                 
                 returns = df['Close'].pct_change().dropna()
-                volatility = returns.std()
-                ma_20 = df['Close'].rolling(window=20).mean().iloc[-1]
+                volatility = returns.std() if not returns.empty else 0.0
+                ma_20 = df['Close'].rolling(window=20).mean().iloc[-1] if len(df) >= 20 else current_price
                 ma_50 = df['Close'].rolling(window=50).mean().iloc[-1] if len(df) >= 50 else ma_20
                 
-                # لوحات المؤشرات الحية
+                # لوحات المؤشرات الحية مع التحقق من القيم
                 col1, col2, col3, col4 = st.columns(4)
                 col1.metric("السعر الحالي", f"${current_price:.2f}", f"{price_change:+.2f}%")
                 col2.metric("مؤشر التقلب", f"{volatility:.4f}")
@@ -90,7 +77,6 @@ if st.button("🚀 ابدأ تحليل الخبير الشامل"):
                 st.markdown("---")
                 st.subheader("🧐 تقرير تحليل الخبير الفني والمالي:")
                 
-                # بناء تحليل خبير حقيقي بناءً على الحسابات الفنية
                 analysis_report = []
                 
                 if current_price > ma_20:
